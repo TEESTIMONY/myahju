@@ -124,108 +124,110 @@
 <script src="https://www.gstatic.com/firebasejs/11.9.0/firebase-database-compat.js"></script>
 
      <script>
-    // Redirect to dashboard if already logged in
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-GCRFbpLQwU55kShhS-DtNSNOPEySQ_g",
+      authDomain: "octen-29d12.firebaseapp.com",
+      databaseURL: "https://octen-29d12-default-rtdb.firebaseio.com",
+      projectId: "octen-29d12",
+      storageBucket: "octen-29d12.appspot.com",
+      messagingSenderId: "1095439842170",
+      appId: "1:1095439842170:web:da0dc8a2c414c60f33f4c3",
+      measurementId: "G-483MYXKNVL"
+    };
+
+    // Initialize Firebase once DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
-      firebase.initializeApp(firebaseConfig);
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
       const auth = firebase.auth();
+      const db = firebase.database();
+
+      // Redirect to dashboard if already logged in
       auth.onAuthStateChanged(function(user) {
         if (user) {
           window.location.href = '/dashboard';
         }
       });
-    });
-    // Firebase Config
-    const firebaseConfig = {
-       apiKey: "AIzaSyD-GCRFbpLQwU55kShhS-DtNSNOPEySQ_g",
-  authDomain: "octen-29d12.firebaseapp.com",
-  databaseURL: "https://octen-29d12-default-rtdb.firebaseio.com",
-  projectId: "octen-29d12",
-  storageBucket: "octen-29d12.appspot.com",
-  messagingSenderId: "1095439842170",
-  appId: "1:1095439842170:web:da0dc8a2c414c60f33f4c3",
-  measurementId: "G-483MYXKNVL"
-    };
 
-  // firebase.initializeApp(firebaseConfig); // Already initialized above
-  const db = firebase.database();
+      function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      }
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
+      // Add custom alert for other buttons
+      document.querySelectorAll('.btn-social, .btn-continue').forEach(btn => {
+        btn.addEventListener('click', () => showToast('Coming soon ✨'));
+      });
 
-    // Add custom alert for other buttons
-    document.querySelectorAll('.btn-social, .btn-continue').forEach(btn => {
-      btn.addEventListener('click', () => showToast('Coming soon ✨'));
-    });
+      document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try {
+          const result = await auth.signInWithPopup(provider);
+          const user = result.user;
+          const userRef = db.ref('users/' + user.uid);
 
-    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user;
-        const userRef = db.ref('users/' + user.uid);
+          const snapshot = await userRef.once('value');
+          const isNewUser = !snapshot.exists();
 
-        const snapshot = await userRef.once('value');
-        const isNewUser = !snapshot.exists();
+          if (isNewUser) {
+            const deviceInfo = {
+              userAgent: navigator.userAgent,
+              language: navigator.language,
+              platform: navigator.platform,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              screen: {
+                width: window.screen.width,
+                height: window.screen.height
+              }
+            };
 
-        if (isNewUser) {
-          const deviceInfo = {
-            userAgent: navigator.userAgent,
-            language: navigator.language,
-            platform: navigator.platform,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            screen: {
-              width: window.screen.width,
-              height: window.screen.height
+            // Get IP and location
+            const ipInfo = await fetch('https://api.ipify.org?format=json')
+              .then(res => res.json())
+              .then(data => data.ip);
+
+            let geo = {};
+            if (navigator.geolocation) {
+              try {
+                geo = await new Promise((resolve, reject) => {
+                  navigator.geolocation.getCurrentPosition(
+                    pos => resolve({
+                      latitude: pos.coords.latitude,
+                      longitude: pos.coords.longitude
+                    }),
+                    err => resolve({ error: "Denied or failed" }),
+                    { timeout: 5000 }
+                  );
+                });
+              } catch (e) {
+                geo = { error: "Geolocation failed" };
+              }
             }
-          };
 
-          // Get IP and location
-          const ipInfo = await fetch('https://api.ipify.org?format=json')
-            .then(res => res.json())
-            .then(data => data.ip);
-
-          let geo = {};
-          if (navigator.geolocation) {
-            try {
-              geo = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(
-                  pos => resolve({
-                    latitude: pos.coords.latitude,
-                    longitude: pos.coords.longitude
-                  }),
-                  err => resolve({ error: "Denied or failed" }),
-                  { timeout: 5000 }
-                );
-              });
-            } catch (e) {
-              geo = { error: "Geolocation failed" };
-            }
+            await userRef.set({
+              name: user.displayName,
+              email: user.email,
+              photoURL: user.photoURL,
+              uid: user.uid,
+              provider: user.providerData,
+              firstLogin: new Date().toISOString(),
+              ip: ipInfo,
+              location: geo,
+              device: deviceInfo
+            });
           }
 
-          await userRef.set({
-            name: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL,
-            uid: user.uid,
-            provider: user.providerData,
-            firstLogin: new Date().toISOString(),
-            ip: ipInfo,
-            location: geo,
-            device: deviceInfo
-          });
+          showToast("Logged in successfully ✅");
+          window.location.href = '/dashboard'; // Redirect to dashboard
+        } catch (error) {
+          console.error(error);
+          showToast("Login failed ❌");
         }
-
-        showToast("Logged in successfully ✅");
-        window.location.href = '/dashboard'; // Redirect to dashboard
-        // You can redirect here or update UI
-      } catch (error) {
-        console.error(error);
-        showToast("Login failed ❌");
-      }
+      });
     });
   </script>
   </body>
