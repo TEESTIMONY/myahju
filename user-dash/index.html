@@ -1,0 +1,437 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Booking Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    />
+    <!-- Font Awesome for Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+        /* General styles for a Notion-like feel */
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f6f5f4; /* Light gray background, similar to Notion */
+            color: #1f2937;
+        }
+
+        .booking-card {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e5e7eb;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        /* A more subtle hover state, like a Notion block */
+        .booking-card:hover {
+            background-color: #f7f6f5;
+            border-color: #d1d5db;
+        }
+
+        .booking-status-tag {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Color palettes inspired by Notion's status properties */
+        .status-ongoing {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-deleted {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-btn {
+            background-color: #f3f4f6;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        .action-btn:disabled {
+            color: #d1d5db;
+            cursor: not-allowed;
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">My Bookings Dashboard</h1>
+            <p class="text-gray-500">Manage all your client bookings in one place.</p>
+            <p class="text-gray-400 text-xs mt-1">
+                User ID:
+                <span id="userIdDisplay" class="font-mono text-gray-600">Loading...</span>
+            </p>
+        </div>
+
+        <!-- Bookings List -->
+        <div id="bookingsList" class="flex flex-col gap-2"></div>
+
+        <!-- No Bookings Message -->
+        <div
+            id="noBookingsMessage"
+            class="hidden text-center text-gray-400 py-10"
+            role="alert"
+            aria-live="polite"
+        >
+            <p class="text-lg">No bookings found.</p>
+            <p>Share your profile link to start receiving bookings!</p>
+        </div>
+
+        <!-- Custom Modal for Confirmation -->
+        <div
+            id="confirmationModal"
+            class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modalTitle"
+            aria-describedby="modalMessage"
+        >
+            <div
+                class="relative p-8 border w-11/12 max-w-md rounded-md bg-white border-gray-200"
+            >
+                <div class="text-center">
+                    <h3
+                        class="text-xl font-medium text-gray-900"
+                        id="modalTitle"
+                        tabindex="0"
+                    >
+                        Confirm Action
+                    </h3>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500" id="modalMessage">
+                            Are you sure you want to perform this action? This cannot be undone.
+                        </p>
+                    </div>
+                    <div class="mt-6 flex gap-3">
+                        <button
+                            id="confirmButton"
+                            class="flex-1 px-4 py-2 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+                        >
+                            Confirm
+                        </button>
+                        <button
+                            id="cancelButton"
+                            class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            signInWithCustomToken,
+            onAuthStateChanged,
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import {
+            getDatabase,
+            ref,
+            onValue,
+            update,
+            remove,
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        // Global variables for Canvas environment
+        const appId =
+            typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+        const firebaseConfig =
+            typeof __firebase_config !== "undefined"
+                ? JSON.parse(__firebase_config)
+                : {
+                      apiKey: "AIzaSyD-GCRFbpLQwU55kShhS-DtNSNOPEySQ_g",
+                      authDomain: "octen-29d12.firebaseapp.com",
+                      databaseURL:
+                          "https://octen-29d12-default-rtdb.firebaseio.com",
+                      projectId: "octen-29d12",
+                      storageBucket: "octen-29d12.appspot.com",
+                      messagingSenderId: "1095439842170",
+                      appId: "1:1095439842170:web:da0dc8a2c414c60f33f4c3",
+                      measurementId: "G-483MYXKNVL",
+                  };
+        // Fix for ReferenceError: Cannot access '__initial_auth_token' before initialization
+        let initialAuthToken = null;
+        if (typeof __initial_auth_token !== "undefined") {
+            initialAuthToken = __initial_auth_token;
+        }
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // UI Elements
+        const bookingsList = document.getElementById("bookingsList");
+        const noBookingsMessage = document.getElementById("noBookingsMessage");
+        const confirmationModal = document.getElementById("confirmationModal");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalMessage = document.getElementById("modalMessage");
+        const confirmButton = document.getElementById("confirmButton");
+        const cancelButton = document.getElementById("cancelButton");
+        const userIdDisplay = document.getElementById("userIdDisplay");
+
+        let userId = null;
+
+        // Function to show/hide the modal
+        const showModal = (title, message, onConfirm) => {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            confirmationModal.classList.remove("hidden");
+
+            const confirmHandler = () => {
+                onConfirm();
+                confirmationModal.classList.add("hidden");
+                confirmButton.removeEventListener("click", confirmHandler);
+            };
+
+            confirmButton.addEventListener("click", confirmHandler);
+            cancelButton.addEventListener("click", () => {
+                confirmationModal.classList.add("hidden");
+                confirmButton.removeEventListener("click", confirmHandler);
+            });
+        };
+
+        // Function to render a booking item
+        const renderBooking = (bookingId, bookingData) => {
+            const bookingCard = document.createElement("div");
+            bookingCard.className = "booking-card";
+
+            let statusClass = "";
+            switch (bookingData.status) {
+                case "ongoing":
+                    statusClass = "status-ongoing";
+                    break;
+                case "completed":
+                    statusClass = "status-completed";
+                    break;
+                case "deleted":
+                    statusClass = "status-deleted";
+                    break;
+                default:
+                    statusClass = "status-ongoing";
+            }
+
+            bookingCard.innerHTML = `
+                <div class="flex-grow">
+                    <p class="text-xl font-semibold text-gray-800">${bookingData.visitorEmail}</p>
+                    <p class="text-gray-500 text-sm mt-1">Booked for: <span class="font-medium text-gray-700">${bookingData.availability}</span></p>
+                    <p class="text-gray-500 text-sm">Timestamp: <span class="font-medium text-gray-700">${new Date(
+                        bookingData.timestamp
+                    ).toLocaleString()}</span></p>
+                    <p class="text-gray-500 text-sm">Phone: <span class="font-medium text-gray-700">${
+                        bookingData.visitorPhone || "N/A"
+                    }</span></p>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                    <span class="booking-status-tag ${statusClass}">${bookingData.status}</span>
+                    <div class="flex gap-1 mt-1">
+                        <button class="action-btn text-gray-500 hover:text-green-600" data-action="complete" data-id="${bookingId}" title="Mark as Complete" ${
+                bookingData.status === "completed" ? "disabled" : ""
+            }>
+                            <i class="fas fa-check-circle"></i>
+                        </button>
+                        <button class="action-btn text-gray-500 hover:text-yellow-600" data-action="ongoing" data-id="${bookingId}" title="Mark as Ongoing" ${
+                bookingData.status === "ongoing" ? "disabled" : ""
+            }>
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="action-btn text-gray-500 hover:text-red-600" data-action="delete" data-id="${bookingId}" title="Delete Booking">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            return bookingCard;
+        };
+
+        // Handles action buttons for bookings
+        const handleBookingAction = (e) => {
+            const button = e.target.closest(".action-btn");
+            if (!button) return;
+
+            const action = button.dataset.action;
+            const bookingId = button.dataset.id;
+
+            if (action === "delete") {
+                showModal(
+                    "Confirm Deletion",
+                    "Are you sure you want to permanently delete this booking? This action cannot be undone.",
+                    () => {
+                        deleteBooking(bookingId);
+                    }
+                );
+            } else if (action === "complete") {
+                showModal(
+                    "Confirm Completion",
+                    'Are you sure you want to mark this booking as "Completed"?',
+                    () => {
+                        updateBookingStatus(bookingId, "completed");
+                    }
+                );
+            } else if (action === "ongoing") {
+                showModal(
+                    "Confirm Ongoing",
+                    'Are you sure you want to mark this booking as "Ongoing"?',
+                    () => {
+                        updateBookingStatus(bookingId, "ongoing");
+                    }
+                );
+            }
+        };
+
+        // Update the status of a booking in Firebase
+        const updateBookingStatus = async (bookingId, newStatus) => {
+            if (!userId) return;
+            const bookingRef = ref(
+                db,
+                `users/${userId}/bookedCalls/${bookingId}`
+            );
+            try {
+                await update(bookingRef, { status: newStatus });
+                console.log(`Booking ${bookingId} status updated to ${newStatus}`);
+            } catch (error) {
+                console.error("Error updating booking status:", error);
+            }
+        };
+
+        // Delete a booking from Firebase
+        const deleteBooking = async (bookingId) => {
+            if (!userId) return;
+            const bookingRef = ref(
+                db,
+                `users/${userId}/bookedCalls/${bookingId}`
+            );
+            try {
+                await remove(bookingRef);
+                console.log(`Booking ${bookingId} deleted.`);
+            } catch (error) {
+                console.error("Error deleting booking:", error);
+            }
+        };
+
+        // Main function to fetch bookings and listen for changes
+        const setupBookingListener = () => {
+            if (!userId) {
+                console.error("User ID is not available.");
+                noBookingsMessage.classList.remove("hidden");
+                return;
+            }
+
+            userIdDisplay.textContent = userId;
+
+            // Corrected path to bookedCalls under users/{userId}/bookedCalls
+            const bookingsRef = ref(
+                db,
+                `users/${userId}/bookedCalls`
+            );
+            onValue(
+                bookingsRef,
+                (snapshot) => {
+                    const bookings = snapshot.val();
+                    bookingsList.innerHTML = "";
+
+                    if (bookings) {
+                        noBookingsMessage.classList.add("hidden");
+                        // Sort bookings by timestamp descending
+                        const sortedBookings = Object.entries(bookings).sort(
+                            ([, a], [, b]) => b.timestamp - a.timestamp
+                        );
+                        sortedBookings.forEach(([bookingId, bookingData]) => {
+                            // Ensure status field exists, default to 'ongoing' if missing
+                            if (!bookingData.status) {
+                                bookingData.status = "ongoing";
+                            }
+                            const bookingCard = renderBooking(
+                                bookingId,
+                                bookingData
+                            );
+                            bookingsList.appendChild(bookingCard);
+                        });
+                    } else {
+                        noBookingsMessage.classList.remove("hidden");
+                    }
+                },
+                {
+                    onlyOnce: false,
+                }
+            );
+        };
+
+        // Authenticate the user and then fetch data
+        const authenticateAndLoad = async () => {
+            try {
+                if (initialAuthToken) {
+                    // Sign in with custom token
+                    const userCredential = await signInWithCustomToken(
+                        auth,
+                        initialAuthToken
+                    );
+                    userId = userCredential.user.uid;
+                    userIdDisplay.textContent = userId;
+                    bookingsList.addEventListener("click", handleBookingAction);
+                    setupBookingListener();
+                } else {
+                    // No token, check if user is already signed in
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            userIdDisplay.textContent = userId;
+                            bookingsList.addEventListener(
+                                "click",
+                                handleBookingAction
+                            );
+                            setupBookingListener();
+                        } else {
+                            // No user signed in, redirect to login
+                            window.location.href = "/auth.html";
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                window.location.href = "/auth.html"; // Redirect on any authentication error
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", authenticateAndLoad);
+    </script>
+</body>
+</html>

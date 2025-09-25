@@ -1,0 +1,1134 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Ahju - Showcase</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    body {
+      font-family: "Montserrat", sans-serif;
+      display: block;
+      position: relative;
+      min-height: 100vh;
+      padding-bottom: 400px;
+      /* space for fixed image */
+      background: #fffde6;
+      margin: 0;
+    }
+    .fixed-bridge-bg {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      max-width: 1440px;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+      height: 400px;
+      object-fit: contain;
+    }
+    /* Glassmorphic circle button */
+    .glass-btn {
+      background: rgba(255 255 255 / 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 9999px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0a1f1c;
+      box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+      cursor: pointer;
+      position: fixed;
+      right: 20px;
+      transform: translateX(100%) scale(0);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+        opacity 0.4s ease;
+      z-index: 50;
+    }
+    .glass-btn.show {
+      transform: translateX(0) scale(1);
+      opacity: 1;
+    }
+    /* Stagger delays for finger wave effect */
+    .glass-btn:nth-child(1) {
+      transition-delay: 0.1s;
+      bottom: 80px;
+    }
+    .glass-btn:nth-child(2) {
+      transition-delay: 0.25s;
+      bottom: 140px;
+    }
+    .glass-btn:nth-child(3) {
+      transition-delay: 0.4s;
+      bottom: 200px;
+    }
+    .glass-btn:nth-child(4) {
+      transition-delay: 0.55s;
+      bottom: 260px;
+    }
+    .glass-btn:nth-child(5) {
+      transition-delay: 0.7s;
+      bottom: 320px;
+    }
+
+    /* Animations for gridlock */
+    @keyframes scroll-left {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+    @keyframes scroll-right {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(50%);
+      }
+    }
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
+    @keyframes radiate {
+      0%,
+      100% {
+        box-shadow: 0 0 5px 0 rgba(214, 255, 26, 0.7);
+      }
+      50% {
+        box-shadow: 0 0 15px 5px rgba(214, 255, 26, 1);
+      }
+    }
+
+    .scroll-container {
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+      margin-bottom: 1.5rem;
+      position: relative;
+      padding: 1em 0;
+    }
+    .scroll-content {
+      display: inline-flex;
+      gap: 1rem;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+      animation-name: scroll-left;
+      animation-duration: 30s;
+    }
+    .scroll-content.reverse {
+      animation-name: scroll-right;
+      animation-duration: 40s;
+    }
+    .card {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 120px;
+      padding: 0 1em;
+      height: 80px;
+      background: #0a1f1c;
+      border-radius: 0.75rem;
+      color: #d6ff1a;
+      font-weight: 700;
+      font-size: 1.125rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      user-select: none;
+      box-shadow: 0 0 8px #3b6b2e;
+    }
+    /* Shimmer effect */
+    .shimmer {
+      background: linear-gradient(
+        90deg,
+        #0a1f1c 25%,
+        #d6ff1a 50%,
+        #0a1f1c 75%
+      );
+      background-size: 200% 100%;
+      animation-name: shimmer;
+      animation-duration: 3s;
+      animation-iteration-count: infinite;
+      animation-timing-function: ease-in-out;
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    /* Radiate effect */
+    .radiate {
+      animation-name: radiate;
+      animation-duration: 2.5s;
+      animation-iteration-count: infinite;
+      animation-timing-function: ease-in-out;
+    }
+    /* Hide scrollbar for all browsers */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Accordion styles */
+    .accordion-item {
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+      overflow: hidden;
+      border: 1px solid #e6ebf5;
+    }
+    .accordion-header {
+      cursor: pointer;
+      padding: 1.5rem 1.5rem;
+      font-weight: 700;
+      font-size: 1.125rem;
+      color: #0a1f1c;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.3s ease;
+    }
+    .accordion-header:hover {
+      background-color: #f0f5f9;
+    }
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 1.5rem;
+      color: #4a5568;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+    }
+    .accordion-content.open {
+      padding: 1rem 1.5rem 1.5rem;
+      max-height: 500px; /* large enough for content */
+    }
+    .accordion-icon {
+      transition: transform 0.3s ease;
+      font-size: 1.25rem;
+      color: #0a1f1c;
+      flex-shrink: 0;
+    }
+    .accordion-icon.open {
+      transform: rotate(45deg);
+    }
+  </style>
+ </head>
+ <body>
+  <header
+    class="flex items-center justify-between px-6 md:px-12 py-6 max-w-[1440px] mx-auto relative z-10"
+  >
+   <div class="flex items-center space-x-2">
+    <img
+      alt="Ahju logo icon, green stylized letter A with arrow shapes"
+      class="w-8 h-8"
+      height="32"
+      src="https://storage.googleapis.com/a1aa/image/2ab73e58-61ad-4223-a100-abe1df30f8e0.jpg"
+      width="32"
+    />
+    <span class="text-[#0A1F1C] font-semibold text-lg select-none">Ahju</span>
+   </div>
+   <nav class="hidden md:flex space-x-8 text-[#0A1F1C] font-normal text-base">
+    <a class="hover:underline" href="/store">Store</a>
+    <a class="hover:underline" href="/auth">Get started</a>
+    <a class="hover:underline" href="#">Join Community</a>
+   </nav>
+   <a href="/auth.html"
+     class="hidden md:block bg-[#D6FF1A] text-black font-semibold text-sm rounded-lg px-4 py-2 hover:bg-[#c6e812] transition"
+     id="dynamicBtn"
+     type="button"
+   >
+    Sign up
+  </a>
+  </header>
+  <main
+    class="max-w-[1440px] mx-auto px-6 md:px-12 flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-16 relative z-10"
+  >
+   <section class="flex-1 max-w-xl">
+    <h1
+      class="text-[#0A1F1C] font-extrabold text-4xl md:text-5xl leading-[1.1] mb-4 select-none"
+      id="dynamicHeadline"
+    >
+     Book appointments
+     <br />
+     right from link in bio,
+     <br />
+     not just generic
+    </h1>
+    <p
+      class="text-[#0A1F1C] font-normal text-sm md:text-base mb-6 leading-relaxed max-w-md"
+    >
+     Ahju lets you instantly connect your NFC-enabled link in bio to all your
+     booking options, social profiles, and services in one seamless place.
+     Simplify your online presence and seal gigs effortlessly.
+    </p>
+    <button
+      class="bg-[#D6FF1A] text-black font-semibold text-sm rounded-lg px-5 py-2 hover:bg-[#c6e812] transition md:hidden mb-6"
+      id="dynamicBtnMobile"
+      type="button"
+    >
+     Book Now
+    </button>
+   </section>
+   <section
+     class="flex-1 w-full max-w-lg rounded-xl p-4 md:p-6 bg-gradient-to-tr from-[#0A1F1C] via-[#3B6B2E] to-[#D6FF1A]"
+   >
+    <div class="bg-white rounded-lg p-4 md:p-6">
+     <nav
+       class="flex space-x-4 md:space-x-6 mb-4 text-sm font-normal text-[#0A1F1C] overflow-x-auto scrollbar-hide"
+       style="scrollbar-width: none"
+     >
+      <button
+        class="rounded-lg px-3 md:px-4 py-2 bg-[#E6EBF5] text-[#0A1F1C] font-semibold cursor-pointer whitespace-nowrap"
+        type="button"
+      >
+       Profile
+      </button>
+      <button
+        class="rounded-lg px-3 md:px-4 py-2 hover:bg-[#E6EBF5] cursor-pointer whitespace-nowrap"
+        type="button"
+      >
+       NFC Card
+      </button>
+      <button
+        class="rounded-lg px-3 md:px-4 py-2 hover:bg-[#E6EBF5] cursor-pointer whitespace-nowrap"
+        type="button"
+      >
+       Booking
+      </button>
+      <button
+        class="rounded-lg px-3 md:px-4 py-2 hover:bg-[#E6EBF5] cursor-pointer whitespace-nowrap"
+        type="button"
+      >
+       Contact
+      </button>
+      <button
+        class="rounded-lg px-3 md:px-4 py-2 hover:bg-[#E6EBF5] cursor-pointer whitespace-nowrap"
+        type="button"
+      >
+       Socials
+      </button>
+     </nav>
+     <div
+       class="flex justify-start md:justify-between mb-6 text-xs font-semibold text-[#0A1F1C] overflow-x-auto scrollbar-hide space-x-2 md:space-x-0"
+       style="scrollbar-width: none"
+     >
+      <button
+        class="border border-[#0A1F1C] rounded-full px-3 py-1 bg-[#E6F5E6] text-[#0A1F1C] font-bold whitespace-nowrap flex-shrink-0"
+        type="button"
+      >
+       Website
+      </button>
+      <button
+        class="rounded-full px-3 py-1 bg-[#E6EBF5] text-[#0A1F1C] whitespace-nowrap flex-shrink-0"
+        type="button"
+      >
+       Portfolio
+      </button>
+      <button
+        class="rounded-full px-3 py-1 bg-[#E6EBF5] text-[#0A1F1C] whitespace-nowrap flex-shrink-0"
+        type="button"
+      >
+       Services
+      </button>
+      <button
+        class="rounded-full px-3 py-1 bg-[#E6EBF5] text-[#0A1F1C] whitespace-nowrap flex-shrink-0"
+        type="button"
+      >
+       Testimonials
+      </button>
+      <button
+        class="rounded-full px-3 py-1 bg-[#E6EBF5] text-[#0A1F1C] whitespace-nowrap flex-shrink-0"
+        type="button"
+      >
+       FAQ
+      </button>
+     </div>
+     <div
+       class="h-40 bg-white rounded-md border border-[#E6EBF5] flex items-center justify-center text-[#0A1F1C] text-center px-4"
+     >
+      <div>
+       <img
+         alt="Placeholder icon representing NFC card, simple stylized card with wireless signal waves"
+         class="mx-auto mb-3"
+         height="80"
+         src="https://storage.googleapis.com/a1aa/image/34fddda1-3997-4de2-863a-46863435f2cc.jpg"
+         width="80"
+       />
+       <p class="text-sm font-medium">
+        Tap your phone to connect instantly with all your links and booking
+        options in one place.
+       </p>
+      </div>
+     </div>
+     <button
+       class="mt-6 w-full bg-[#0A1F1C] text-white font-semibold text-sm rounded-lg py-3"
+       id="dynamicBtnSection"
+       type="button"
+     >
+      Showcase work
+     </button>
+    </div>
+   </section>
+  </main>
+
+  <!-- New Integration Section: Share your identity in one single smart tap -->
+  <section class="max-w-[1440px] mx-auto px-6 md:px-12 mt-20 mb-20 relative z-10">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-[#0A1F1C] font-extrabold text-4xl mb-4 select-none">
+        Share your identity in one single smart tap.
+      </h2>
+      <p class="text-[#0A1F1C] font-normal text-base mb-6 max-w-xl mx-auto leading-relaxed">
+        You only get one first impression. And in 2025, nobody has time for “let me type my number” or “search me on Instagram.” People want connection now. And AHJU makes that happen.
+      </p>
+      <a
+      href="/auth.html"
+        class="bg-[#D6FF1A] text-black font-semibold text-sm rounded-lg px-6 py-3 hover:bg-[#c6e812] transition"
+        type="button"
+      >
+        GET STARTED TODAY
+    </a>
+    </div>
+  </section>
+
+  <!-- What is AHJU Section -->
+  <section class="max-w-[1440px] mx-auto px-6 md:px-12 mb-20 relative z-10">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-6 select-none">
+        What is AHJU?
+      </h2>
+      <p class="text-[#0A1F1C] font-normal text-base mb-6 max-w-xl mx-auto leading-relaxed">
+        AHJU is a smart identity card powered with NFC technology. With just one tap, everything you’ve built is instantly shared — your business, your socials, your store, your vibe.
+      </p>
+      <a
+      href="/auth.html"
+        class="bg-[#D6FF1A] text-black font-semibold text-sm rounded-lg px-6 py-3 hover:bg-[#c6e812] transition"
+        type="button"
+      >
+        GET STARTED TODAY
+    </a>
+    </div>
+  </section>
+
+  <!-- Share Who You Are Section -->
+  <section class="max-w-[1440px] mx-auto px-6 md:px-12 mb-20 relative z-10">
+    <div class="max-w-5xl mx-auto text-center">
+      <h2 class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-6 select-none">
+        Share Who You Are, Wherever You Go
+      </h2>
+      <p class="text-[#0A1F1C] font-normal text-base mb-8 max-w-3xl mx-auto leading-relaxed">
+        Effortlessly connect your TikTok, Twitter, Instagram, website, and more. Showcase your latest work, portfolio, or store instantly. Let your entire identity come together seamlessly — and share it with finesse.
+      </p>
+      <button
+        class="bg-[#D6FF1A] text-black font-semibold text-sm rounded-lg px-6 py-3 hover:bg-[#c6e812] transition"
+        type="button"
+      >
+        GET STARTED TODAY
+      </button>
+    </div>
+  </section>
+
+  <!-- Why AHJU Section -->
+  <section class="max-w-[1440px] mx-auto px-6 md:px-12 mb-20 relative z-10">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-6 select-none">
+        Why AHJU?
+      </h2>
+      <p class="text-[#0A1F1C] font-normal text-base mb-6 max-w-xl mx-auto leading-relaxed">
+        Because you are not B-A-S-I-C. Your brand, your hustle, your business, your identity deserves to shine in the boldest way — and be shared with the world, designed to convert.
+      </p>
+    </div>
+  </section>
+
+  <!-- Cards Format Section -->
+  <section class="max-w-[1440px] mx-auto px-6 md:px-12 mb-20 relative z-10">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div class="bg-[#d6ff1a33] rounded-xl p-8 text-[#0A1F1C] flex flex-col items-center text-center shadow-lg">
+        <i class="fas fa-share-alt text-6xl mb-6"></i>
+        <h3 class="text-xl font-bold mb-2">Unlimited Sharing &amp; Analytics</h3>
+        <p class="text-sm leading-relaxed">
+          Tap, tap, share — as many times as you need. No more wasting money reprinting paper cards. Track your engagement, monitor leads, and see what’s converting. Make informed updates to keep people coming back.
+        </p>
+      </div>
+      <div class="bg-[#d6ff1a33] rounded-xl p-8 text-[#0A1F1C] flex flex-col items-center text-center shadow-lg">
+        <i class="fas fa-paint-brush text-6xl mb-6"></i>
+        <h3 class="text-xl font-bold mb-2">Customize Your Identity in Minutes</h3>
+        <p class="text-sm leading-relaxed">
+          Choose colors, styles, and layouts that reflect <em>you</em>. Design and personalize your confidence, because ordinary is not in your DNA.
+        </p>
+      </div>
+      <div class="bg-[#d6ff1a33] rounded-xl p-8 text-[#0A1F1C] flex flex-col items-center text-center shadow-lg">
+        <i class="fas fa-bolt text-6xl mb-6"></i>
+        <h3 class="text-xl font-bold mb-2">Instant Identity Upgrade</h3>
+        <p class="text-sm leading-relaxed mb-6">
+          In just three steps: choose your preferred product, place your order, then tap and share your details effortlessly.
+        </p>
+        <button
+          class="bg-[#D6FF1A] text-black font-semibold text-sm rounded-lg px-6 py-3 hover:bg-[#c6e812] transition"
+          type="button"
+        >
+          GET STARTED TODAY
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- The only digital profile made for Section -->
+  <section class="max-w-[1440px] mx-auto px-6 md:px-12 mb-20 relative z-10">
+    <div class="max-w-6xl mx-auto text-center">
+      <h2 class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-8 select-none">
+        The only digital profile made for:
+      </h2>
+      <p class="text-[#0A1F1C] font-semibold text-base leading-relaxed max-w-5xl mx-auto">
+        36M+ creators • influencers • small businesses • athletes • health professionals • consultants • coaches • marketers • retailers • stylists • artists • creatives • podcasters • fashion designers • printers • merch sellers • writers • CEOs • executives • freelancers • developers • data analysts • manufacturers
+      </p>
+      <p class="text-[#0A1F1C] font-semibold text-base mt-6">
+        MADE IN LAGOS. But the standard is global.
+      </p>
+    </div>
+  </section>
+
+  <!-- Testimonial Grid Section -->
+  <section class="max-w-[1440px] mx-auto px-6 md:px-12 mb-20 relative z-10">
+    <h2 class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-12 select-none text-center">
+      What People Are Saying
+    </h2>
+    <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+      <div class="bg-white rounded-xl p-6 shadow-lg text-[#0A1F1C]">
+        <p class="italic text-base leading-relaxed">
+          “Once you tap it, people are always like — wow, that was awesome!”
+        </p>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow-lg text-[#0A1F1C]">
+        <p class="italic text-base leading-relaxed">
+          “I didn’t know sharing my business could feel this luxurious and easy.”
+        </p>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow-lg text-[#0A1F1C]">
+        <p class="italic text-base leading-relaxed">
+          “Everyone I connect with remembers me — because it’s different.”
+        </p>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow-lg text-[#0A1F1C]">
+        <p class="italic text-base leading-relaxed">
+          “No more “let me type my number” or "search me on instagram" again — just tap, done.”
+        </p>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow-lg text-[#0A1F1C]">
+        <p class="italic text-base leading-relaxed">
+          “I wasn’t sure if it’d work on my phone, but the QR fallback saved me”
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section (Add new FAQs to existing FAQ section) -->
+  <section
+    aria-label="Frequently Asked Questions"
+    class="max-w-[1440px] mx-auto px-6 md:px-12 mb-40 relative z-10"
+  >
+   <h2
+     class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-12 select-none text-center"
+   >
+    Frequently Asked Questions
+   </h2>
+   <div class="max-w-4xl mx-auto space-y-4">
+    <div class="accordion-item">
+     <button
+       type="button"
+       class="accordion-header"
+       aria-expanded="false"
+       aria-controls="faq1"
+       id="faq1-header"
+     >
+      How does Ahju's NFC link in bio work?
+      <i class="bi bi-plus-lg accordion-icon"></i>
+     </button>
+     <div
+       id="faq1"
+       class="accordion-content"
+       role="region"
+       aria-labelledby="faq1-header"
+       hidden
+     >
+      <p>
+       Ahju uses NFC technology embedded in cards or devices to instantly
+       connect your phone to a customizable link in bio page containing all
+       your booking options, social links, and services.
+      </p>
+     </div>
+    </div>
+    <div class="accordion-item">
+     <button
+       type="button"
+       class="accordion-header"
+       aria-expanded="false"
+       aria-controls="faq2"
+       id="faq2-header"
+     >
+      Do the cards store my data?
+      <i class="bi bi-plus-lg accordion-icon"></i>
+     </button>
+     <div
+       id="faq2"
+       class="accordion-content"
+       role="region"
+       aria-labelledby="faq2-header"
+       hidden
+     >
+      <p>
+       No. The chip only contains a short link (URL) to your AHJU profile. You can update your profile anytime.
+      </p>
+     </div>
+    </div>
+    <div class="accordion-item">
+     <button
+       type="button"
+       class="accordion-header"
+       aria-expanded="false"
+       aria-controls="faq3"
+       id="faq3-header"
+     >
+      How long do NFC chips last?
+      <i class="bi bi-plus-lg accordion-icon"></i>
+     </button>
+     <div
+       id="faq3"
+       class="accordion-content"
+       role="region"
+       aria-labelledby="faq3-header"
+       hidden
+     >
+      <p>
+       NFC chips are built to last for many years. They only fail if physically damaged or exposed to extreme conditions.
+      </p>
+     </div>
+    </div>
+    <div class="accordion-item">
+     <button
+       type="button"
+       class="accordion-header"
+       aria-expanded="false"
+       aria-controls="faq4"
+       id="faq4-header"
+     >
+      Which phones support NFC?
+      <i class="bi bi-plus-lg accordion-icon"></i>
+     </button>
+     <div
+       id="faq4"
+       class="accordion-content"
+       role="region"
+       aria-labelledby="faq4-header"
+       hidden
+     >
+      <p>
+       Most new model Android devices (Samsung, Tecno, Infinix, Huawei, Google Pixel, Oppo, Xiaomi, Vivo), iPhone 7 and above models support NFC.
+      </p>
+     </div>
+    </div>
+    <div class="accordion-item">
+     <button
+       type="button"
+       class="accordion-header"
+       aria-expanded="false"
+       aria-controls="faq5"
+       id="faq5-header"
+     >
+      What if my phone doesn’t have NFC?
+      <i class="bi bi-plus-lg accordion-icon"></i>
+     </button>
+     <div
+       id="faq5"
+       class="accordion-content"
+       role="region"
+       aria-labelledby="faq5-header"
+       hidden
+     >
+      <p>
+       No problem. Every card has a QR code fallback plus a short shareable link you can drop on socials.
+      </p>
+     </div>
+    </div>
+    <div class="accordion-item">
+     <button
+       type="button"
+       class="accordion-header"
+       aria-expanded="false"
+       aria-controls="faq6"
+       id="faq6-header"
+     >
+      How long does production take?
+      <i class="bi bi-plus-lg accordion-icon"></i>
+     </button>
+     <div
+       id="faq6"
+       class="accordion-content"
+       role="region"
+       aria-labelledby="faq6-header"
+       hidden
+     >
+      <p>
+       1–3 business days. Custom finishes or large orders may take longer.
+      </p>
+     </div>
+    </div>
+    <div class="accordion-item">
+     <button
+       type="button"
+       class="accordion-header"
+       aria-expanded="false"
+       aria-controls="faq7"
+       id="faq7-header"
+     >
+      Do you ship across Nigeria?
+      <i class="bi bi-plus-lg accordion-icon"></i>
+     </button>
+     <div
+       id="faq7"
+       class="accordion-content"
+       role="region"
+       aria-labelledby="faq7-header"
+       hidden
+     >
+      <p>
+       Yes — Lagos same day/ 3 business days delivery available. Nationwide via trusted couriers. International shipping on request.
+      </p>
+     </div>
+    </div>
+    <div class="accordion-item">
+     <button
+       type="button"
+       class="accordion-header"
+       aria-expanded="false"
+       aria-controls="faq8"
+       id="faq8-header"
+     >
+      What if my card arrives damaged?
+      <i class="bi bi-plus-lg accordion-icon"></i>
+     </button>
+     <div
+       id="faq8"
+       class="accordion-content"
+       role="region"
+       aria-labelledby="faq8-header"
+       hidden
+     >
+      <p>
+       Take photos of the package and contents within 48 hours, and we’ll replace them immediately.
+      </p>
+     </div>
+    </div>
+    <div class="accordion-item">
+     <button
+       type="button"
+       class="accordion-header"
+       aria-expanded="false"
+       aria-controls="faq9"
+       id="faq9-header"
+     >
+      What payment methods do you accept?
+      <i class="bi bi-plus-lg accordion-icon"></i>
+     </button>
+     <div
+       id="faq9"
+       class="accordion-content"
+       role="region"
+       aria-labelledby="faq9-header"
+       hidden
+     >
+      <p>
+       Bank transfer, Paystack, USSD, or cash on pickup. For large orders: we get on a meeting with you.
+      </p>
+     </div>
+    </div>
+   </div>
+  </section>
+
+  <!-- Why now Section -->
+  <section class="max-w-[1440px] mx-auto px-6 md:px-12 mb-20 relative z-10">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-6 select-none">
+        Why now?
+      </h2>
+      <p class="text-[#0A1F1C] font-normal text-base mb-6 max-w-xl mx-auto leading-relaxed">
+        Because identity is everything.<br />
+        And the longer you wait, the more you blend in with everyone else.<br />
+        AHJU isn’t just a product. It’s the future of how you connect, network, and get remembered.<br />
+        You can either stay basic. Or you can stand out.<br />
+        The question is not “Should I get one?”<br />
+        The real question is:<br />
+        One card for you? Or two cards — one for you, one for your partner/friend/team?
+      </p>
+      <button
+        class="bg-[#D6FF1A] text-black font-semibold text-sm rounded-lg px-6 py-3 hover:bg-[#c6e812] transition"
+        type="button"
+      >
+        GET STARTED TODAY
+      </button>
+    </div>
+  </section>
+
+  <!-- Different Background Section: Get AHJU today -->
+  <section class="max-w-[1440px] mx-auto px-6 md:px-12 mb-40 relative z-10 bg-[#0A1F1C] rounded-xl py-16">
+    <div class="max-w-3xl mx-auto text-center text-white">
+      <h2 class="font-extrabold text-4xl mb-6 select-none">
+        Get AHJU today.<br />
+        Be Bold. Be Fresh. Be the Future.
+      </h2>
+      <form class="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-xl mx-auto" action="/auth.html#" method="POST">
+        <input
+          type="text"
+          name="username"
+          id="username"
+          placeholder="Type in username"
+          required
+          class="w-full sm:flex-1 rounded-lg px-4 py-3 text-black font-semibold focus:outline-none focus:ring-2 focus:ring-[#D6FF1A]"
+        />
+        <button
+          type="submit"
+          class="bg-[#D6FF1A] text-black font-semibold rounded-lg px-6 py-3 hover:bg-[#c6e812] transition w-full sm:w-auto"
+        >
+          Claim Your AHJU
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Existing Not just generic section -->
+  <section
+    class="max-w-[1440px] mx-auto px-6 md:px-12 mt-20 mb-40 relative z-10"
+  >
+   <h2
+     class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-8 select-none text-center"
+   >
+    Not just generic
+   </h2>
+   <div class="space-y-6 overflow-hidden">
+    <!-- Line 1: scroll left with shimmer on some cards -->
+    <div class="scroll-container">
+     <div class="scroll-content" style="animation-duration: 30s">
+      <div class="card shimmer">@katseye</div>
+      <div class="card">@hybe</div>
+      <div class="card shimmer">@blackpink</div>
+      <div class="card">@newjeans</div>
+      <div class="card shimmer">@aespa</div>
+      <div class="card">@ive</div>
+      <div class="card shimmer">@twice</div>
+      <div class="card">@le_sserafim</div>
+      <div class="card shimmer">@itzy</div>
+      <div class="card">@redvelvet</div>
+     </div>
+    </div>
+    <!-- Line 2: scroll right with radiate on some cards -->
+    <div class="scroll-container">
+     <div class="scroll-content reverse" style="animation-duration: 40s">
+      <div class="card radiate">@bts</div>
+      <div class="card">@exo</div>
+      <div class="card radiate">@seventeen</div>
+      <div class="card">@nct</div>
+      <div class="card radiate">@straykids</div>
+      <div class="card">@txt</div>
+      <div class="card radiate">@enhypen</div>
+      <div class="card">@ateez</div>
+      <div class="card radiate">@treasure</div>
+      <div class="card">@monstax</div>
+     </div>
+    </div>
+    <!-- Line 3: scroll left with shimmer on some cards -->
+    <div class="scroll-container">
+     <div class="scroll-content" style="animation-duration: 35s">
+      <div class="card shimmer">@jungkook</div>
+      <div class="card">@lisa</div>
+      <div class="card shimmer">@rosé</div>
+      <div class="card">@jisoo</div>
+      <div class="card shimmer">@taehyung</div>
+      <div class="card">@rm</div>
+      <div class="card shimmer">@jennie</div>
+      <div class="card">@suga</div>
+      <div class="card shimmer">@iu</div>
+      <div class="card">@taeyeon</div>
+     </div>
+    </div>
+   </div>
+  </section>
+
+  <!-- Updated Features Highlight Section -->
+  <section
+    aria-label="Features highlight"
+    class="max-w-[1440px] mx-auto px-6 md:px-12 mb-40 relative z-10"
+  >
+   <h2
+     class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-12 select-none text-center"
+   >
+    Why Choose Ahju?
+   </h2>
+   <div
+     class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 max-w-6xl mx-auto"
+   >
+    <div
+      class="bg-[#d6ff1a33] rounded-xl p-8 text-[#0A1F1C] flex flex-col items-center text-center shadow-lg"
+    >
+     <i class="bi bi-lightning-charge-fill text-6xl mb-6"></i>
+     <h3 class="text-xl font-bold mb-2">Instant Connection</h3>
+     <p class="text-sm leading-relaxed">
+      Connect your NFC link in bio instantly to all your booking and social
+      links without any hassle.
+     </p>
+    </div>
+    <div
+      class="bg-[#d6ff1a33] rounded-xl p-8 text-[#0A1F1C] flex flex-col items-center text-center shadow-lg"
+    >
+     <i class="bi bi-shield-lock-fill text-6xl mb-6"></i>
+     <h3 class="text-xl font-bold mb-2">Secure &amp; Reliable</h3>
+     <p class="text-sm leading-relaxed">
+      Your data and bookings are protected with top-notch security and
+      privacy standards.
+     </p>
+    </div>
+    <div
+      class="bg-[#d6ff1a33] rounded-xl p-8 text-[#0A1F1C] flex flex-col items-center text-center shadow-lg"
+    >
+     <i class="bi bi-gear-fill text-6xl mb-6"></i>
+     <h3 class="text-xl font-bold mb-2">Fully Customizable</h3>
+     <p class="text-sm leading-relaxed">
+      Tailor your link in bio experience with custom buttons, colors, and
+      layouts.
+     </p>
+    </div>
+   </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section
+    aria-label="Contact Us"
+    class="max-w-[1440px] mx-auto px-6 md:px-12 mb-40 relative z-10"
+  >
+   <h2
+     class="text-[#0A1F1C] font-extrabold text-3xl md:text-4xl mb-12 select-none text-center"
+   >
+    Get in Touch
+   </h2>
+   <form
+     class="max-w-3xl mx-auto bg-white rounded-lg p-8 shadow-lg space-y-6"
+     action="#"
+     method="POST"
+   >
+    <div>
+     <label
+       for="name"
+       class="block mb-2 font-semibold text-[#0A1F1C] text-sm md:text-base"
+       >Name</label
+     >
+     <input
+       type="text"
+       id="name"
+       name="name"
+       required
+       class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6FF1A]"
+     />
+    </div>
+    <div>
+     <label
+       for="email"
+       class="block mb-2 font-semibold text-[#0A1F1C] text-sm md:text-base"
+       >Email</label
+     >
+     <input
+       type="email"
+       id="email"
+       name="email"
+       required
+       class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6FF1A]"
+     />
+    </div>
+    <div>
+     <label
+       for="message"
+       class="block mb-2 font-semibold text-[#0A1F1C] text-sm md:text-base"
+       >Message</label
+     >
+     <textarea
+       id="message"
+       name="message"
+       rows="4"
+       required
+       class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6FF1A]"
+     ></textarea>
+    </div>
+    <button
+      type="submit"
+      class="bg-[#D6FF1A] text-black font-semibold text-base rounded-lg px-6 py-3 hover:bg-[#c6e812] transition w-full"
+    >
+     Send Message
+    </button>
+   </form>
+  </section>
+  <!-- Footer -->
+  <footer
+    class="max-w-[1440px] mx-auto px-6 md:px-12 py-8 text-center text-[#0A1F1C] font-semibold text-sm relative z-10"
+  >
+   &copy; 2025 Ahju. All rights reserved.
+  </footer>
+  <img
+    alt="Illustration of a bridge and port with containers and cranes in yellow and brown tones, spanning the bottom of the page"
+    class="fixed-bridge-bg"
+    height="400"
+    src="https://storage.googleapis.com/a1aa/image/5e94d889-3132-4947-1a00-8ecea65211ee.jpg"
+    width="1440"
+  />
+  <div
+    aria-label="Social media buttons"
+    class="fixed right-5 bottom-20 flex flex-col space-y-6 z-50"
+  >
+   <button aria-label="Facebook" class="glass-btn" type="button">
+    <i class="bi bi-facebook" style="font-size: 24px"></i>
+   </button>
+   <button aria-label="Twitter" class="glass-btn" type="button">
+    <i class="bi bi-twitter" style="font-size: 24px"></i>
+   </button>
+   <button aria-label="Instagram" class="glass-btn" type="button">
+    <i class="bi bi-instagram" style="font-size: 24px"></i>
+   </button>
+   <button aria-label="LinkedIn" class="glass-btn" type="button">
+    <i class="bi bi-linkedin" style="font-size: 24px"></i>
+   </button>
+   <button aria-label="YouTube" class="glass-btn" type="button">
+    <i class="bi bi-youtube" style="font-size: 24px"></i>
+   </button>
+  </div>
+  <script>
+    (() => {
+      const buttons = document.querySelectorAll(".glass-btn");
+      let shown = false;
+
+      function showButtons() {
+        buttons.forEach((btn, i) => {
+          setTimeout(() => {
+            btn.classList.add("show");
+          }, i * 150);
+        });
+      }
+
+      function hideButtons() {
+        buttons.forEach((btn) => {
+          btn.classList.remove("show");
+        });
+      }
+
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 50 && !shown) {
+          shown = true;
+          showButtons();
+        } else if (window.scrollY <= 50 && shown) {
+          shown = false;
+          hideButtons();
+        }
+      });
+
+      // Dynamic headline and button text cycling
+      const headline = document.getElementById("dynamicHeadline");
+      const btnDesktop = document.getElementById("dynamicBtn");
+      const btnMobile = document.getElementById("dynamicBtnMobile");
+      const btnSection = document.getElementById("dynamicBtnSection");
+
+      const texts = [
+        {
+          headline: [
+            "Book appointments",
+            "right from link in bio,",
+            "not just generic",
+          ],
+          button: "Book appointment",
+        },
+        {
+          headline: [
+            "Showcase work",
+            "right from link in bio,",
+            "not just generic",
+          ],
+          button: "Showcase work",
+        },
+        {
+          headline: [
+            "Seal gigs",
+            "right from link in bio,",
+            "not just generic",
+          ],
+          button: "Seal gigs",
+        },
+      ];
+
+      let index = 0;
+
+      function updateText() {
+        const current = texts[index];
+        headline.innerHTML = current.headline.map((line) => line).join("<br/>");
+        btnDesktop.textContent = current.button;
+        btnMobile.textContent = current.button;
+        btnSection.textContent = current.button;
+        index = (index + 1) % texts.length;
+      }
+
+      // Initial text set
+      updateText();
+
+      // Change text every 3.5 seconds
+      setInterval(updateText, 3500);
+
+      // Accordion functionality
+      const accordionHeaders = document.querySelectorAll(".accordion-header");
+      accordionHeaders.forEach((header) => {
+        header.addEventListener("click", () => {
+          const expanded = header.getAttribute("aria-expanded") === "true";
+          // Close all accordions
+          accordionHeaders.forEach((h) => {
+            h.setAttribute("aria-expanded", "false");
+            h.querySelector(".accordion-icon").classList.remove("open");
+            const content = document.getElementById(h.getAttribute("aria-controls"));
+            if (content) {
+              content.hidden = true;
+              content.classList.remove("open");
+            }
+          });
+          if (!expanded) {
+            header.setAttribute("aria-expanded", "true");
+            header.querySelector(".accordion-icon").classList.add("open");
+            const content = document.getElementById(header.getAttribute("aria-controls"));
+            if (content) {
+              content.hidden = false;
+              content.classList.add("open");
+            }
+          }
+        });
+      });
+    })();
+  </script>
+ </body>
+</html>
