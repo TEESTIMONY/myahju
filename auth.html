@@ -124,6 +124,16 @@
 <script src="https://www.gstatic.com/firebasejs/11.9.0/firebase-database-compat.js"></script>
 
      <script>
+    // Redirect to dashboard if already logged in
+    document.addEventListener('DOMContentLoaded', function() {
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      auth.onAuthStateChanged(function(user) {
+        if (user) {
+          window.location.href = '/dashboard';
+        }
+      });
+    });
     // Firebase Config
     const firebaseConfig = {
        apiKey: "AIzaSyD-GCRFbpLQwU55kShhS-DtNSNOPEySQ_g",
@@ -136,9 +146,8 @@
   measurementId: "G-483MYXKNVL"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+  // firebase.initializeApp(firebaseConfig); // Already initialized above
+  const db = firebase.database();
 
     function showToast(msg) {
       const toast = document.getElementById('toast');
